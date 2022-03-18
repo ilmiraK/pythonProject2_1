@@ -1,16 +1,47 @@
-# This is a sample Python script.
+from flask import Flask, request, render_template
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
+from utils import load_data, prepare_posts
+
+posts, comments, bookmarks = load_data()
+
+posts = prepare_posts(posts, comments)
+
+app = Flask(__name__)
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+@app.route('/')
+def page_index():
+    return render_template("index.html", posts=posts, comments=comments)
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+@app.route('/posts/<post_id>')
+def page_current_post(post_id):
+    i = 0
+    for post in posts:
+        i += 1
+        if post["pk"] == int(post_id):
+            return render_template("post.html", comments=post['comments'], post=post)
+    return 'not found', 404
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
+@app.route('/search/', methods=['POST', 'GET'])
+def search_post():
+    s = request.args.get('s')
+    found_posts = []
+    if s:
+        for post in posts:
+            if s in post['content']:
+                found_posts.append(post)
+
+    return render_template("search.html", posts=found_posts)
+
+
+@app.route('/users/<username>')
+def all_user_posts(username):
+    for post in posts:
+        if post["poster_name"] == username:
+            return render_template("user-feed.html", post=post)
+    return 'not found', 404
+
+
+app.run()

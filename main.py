@@ -1,5 +1,7 @@
 from flask import Flask, request, render_template
 
+import json
+
 from utils import load_data, prepare_posts
 
 posts, comments, bookmarks = load_data()
@@ -38,9 +40,24 @@ def search_post():
 
 @app.route('/users/<username>')
 def all_user_posts(username):
+    user_posts = []
     for post in posts:
         if post["poster_name"] == username:
-            return render_template("user-feed.html", post=post)
+            user_posts.append(post)
+
+    return render_template("user-feed.html", posts=user_posts)
+
+
+@app.route('/api/posts')
+def get_api_posts():
+    return json.dumps(posts, ensure_ascii=False), 200
+
+
+@app.route('/api/posts/<post_id>')
+def get_api_post(post_id):
+    post_id = int(post_id)
+    if post_id <= len(posts):
+        return json.dumps(posts[post_id-1], ensure_ascii=False), 200
     return 'not found', 404
 
 

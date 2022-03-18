@@ -21,7 +21,7 @@ def prepare_posts(posts, comments):
         for comment in comments:
             if comment.get("post_id") == pk:
                 post_comments.append(comment)
-        posts[i]["comment"] = post_comments
+        posts[i]["comments"] = post_comments
         posts[i]["comment_count"] = len(post_comments)
         posts[i]["content"] = tag_content(posts[i]["content"])
     return posts

@@ -1,6 +1,4 @@
-from flask import Flask, request, render_template
-
-import json
+from flask import Flask, request, render_template, jsonify
 
 from utils import load_data, prepare_posts
 
@@ -10,17 +8,17 @@ posts = prepare_posts(posts, comments)
 
 app = Flask(__name__)
 
+app.config['JSON_AS_ASCII'] = False
+
 
 @app.route('/')
 def page_index():
     return render_template("index.html", posts=posts, comments=comments)
 
 
-@app.route('/posts/<post_id>')
+@app.route('/posts/<int:post_id>')
 def page_current_post(post_id):
-    i = 0
     for post in posts:
-        i += 1
         if post["pk"] == int(post_id):
             return render_template("post.html", comments=post['comments'], post=post)
     return 'not found', 404
@@ -50,14 +48,13 @@ def all_user_posts(username):
 
 @app.route('/api/posts')
 def get_api_posts():
-    return json.dumps(posts, ensure_ascii=False), 200
+    return jsonify(posts), 200
 
 
-@app.route('/api/posts/<post_id>')
+@app.route('/api/posts/<int:post_id>')
 def get_api_post(post_id):
-    post_id = int(post_id)
     if post_id <= len(posts):
-        return json.dumps(posts[post_id-1], ensure_ascii=False), 200
+        return jsonify(posts[post_id - 1]), 200
     return 'not found', 404
 
 
